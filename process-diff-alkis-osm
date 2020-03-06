@@ -1,0 +1,84 @@
+#!/bin/sh
+
+set -e
+set -x
+
+BASE=/current
+
+if [ ! -e ${BASE}/${PBFFILE} ]; then
+	echo Need PBFFILE in environment
+	exit 0
+fi
+
+if [ ! -e ${BASE}/${ALKISFILE} ]; then
+	echo Need ALKISFILE in environment
+	exit 0
+fi
+
+# Turn off sync/fsync etc - we throw away the database anyway
+echo "fsync=off" >>/etc/postgresql/11/main/postgresql.conf
+echo "synchronous_commit=off" >>/etc/postgresql/11/main/postgresql.conf
+
+/etc/init.d/postgresql start
+
+su - postgres -c "createuser root -s"
+createdb osm -O root
+psql osm -c "create extension postgis;"
+psql osm -c "create extension hstore;"
+
+# Import the osm pbf file
+osm2pgsql --hstore --create --latlong --slim --cache 6000 \
+	-x -d osm -U root ${BASE}/${PBFFILE}
+
+# Skip indexing - we dont need any of those indexes
+# Import NAS/ALKIS dump
+sed -e 's/CREATE.* INDEX/-- CREATE INDEX/' <${BASE}/${ALKISFILE} |\
+	psql osm -f -
+
+# Create SRID 4326 shadow column in the ax_gebaeude table
+psql osm -c "SELECT AddGeometryColumn ('public','ax_gebaeude','geom',4326,'GEOMETRY',2);"
+psql osm -c "update ax_gebaeude set geom = ST_Transform(wkb_geometry, 4326);"
+psql osm -c "create index ax_gebaeude_geom_idx on ax_gebaeude using gist (geom);"
+
+psql osm <<EOSQL
+select  *
+into    ax_gebaeude_diff
+from    (
+        select  *,
+                ST_Area(ST_Transform(diff, 25832)) area
+        from    (
+                select  ogc_fid,
+                        ST_Difference(geom, building) as diff
+                from    (
+                        select  g.ogc_fid,
+                                g.geom,
+                                ST_Union(p.way) as building
+                        from    ax_gebaeude g
+                                join planet_osm_polygon p on ( ST_Intersects(p.way, g.geom) )
+                        where   p.building <> ''
+                        group  by g.geom,ogc_fid
+                        ) foo  
+                ) bar   
+        ) baz   
+where   area > 5
+;     
+EOSQL
+
+
+case ${OUTPUT} in
+	*.dump)
+		pg_dump -O osm \
+			-t ax_gebaeude_diff \
+			>${BASE}/${OUTPUT}
+		;;
+	*.sqlite)
+		ogr2ogr -f SQLite \
+			-dsco SPATIALITE=YES \
+			-nln alkisnotinosm \
+			${BASE}/${OUTPUT} \
+			PG:"dbname='osm'" \
+			-sql "select ogc_fid as id, diff as geom, 'Area ' || trunc(area) || 'm²' as text, 'default' as style from ax_gebaeude_diff"
+		;;
+esac
+
+/etc/init.d/postgresql stop
