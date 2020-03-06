@@ -1,0 +1,55 @@
+#!/bin/bash
+
+set -e
+set -x
+
+BASE=/current
+
+# Turn off sync/fsync etc - we throw away the database anyway
+echo "fsync=off" >>/etc/postgresql/11/main/postgresql.conf
+echo "synchronous_commit=off" >>/etc/postgresql/11/main/postgresql.conf
+
+/etc/init.d/postgresql start
+
+su - postgres -c "createuser root -s"
+createdb alkis -O root
+psql alkis -c "create extension postgis;"
+
+psql alkis -f ${BASE}/alkisimport-schema.sql
+
+# ( cd ${BASE}/alkisimport ; psql alkis \
+# 	-v alkis_epsg=25832 \
+# 	-v alkis_schema=public \
+# 	-v postgis_schema=public \
+# 	-v parent_schema=public \
+# 	-f alkis-init.sql )
+ 
+import() {
+	file=$1
+	schema=$2
+
+	echo $file
+	bn=$(basename ${file})
+
+	mkdir /tmp/${bn}
+	( cd /tmp/${bn} ; unzip $file )
+
+	time ogr2ogr -skipfailures \
+			-f PostgreSQL \
+				-update \
+				-append \
+		-nlt CONVERT_TO_LINEAR \
+		PG:"dbname='alkis'" \
+		/tmp/${bn}/*.xml
+
+	rm -rf /tmp/${bn}
+}
+
+
+for i in ${BASE}/${NASDIR}/*.zip; do
+	import $(readlink -f $i)
+done
+
+pg_dump -o alkis >${BASE}/${OUTPUT}
+
+/etc/init.d/postgresql stop
