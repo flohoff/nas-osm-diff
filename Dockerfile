@@ -6,7 +6,7 @@ RUN apt-get update \
 	&& echo 'APT::Install-Recommends "false";' >/etc/apt/apt.conf.d/99norecommends \
 	&& echo 'APT::Install-Suggests "false";' >/etc/apt/apt.conf.d/99nosuggests \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade \
-	&& DEBIAN_FRONTEND=noninteractive apt-get -fy install gdal-bin postgis postgresql \
+	&& DEBIAN_FRONTEND=noninteractive apt-get -fy install gdal-bin postgis postgresql unzip \
 		postgresql-11-postgis-2.5-scripts postgresql-11-postgis-2.5 osm2pgsql \
 	&& apt-get clean \
 	&& sed -i -e "s/.listen_addresses.*/listen_addresses = '*'/" /etc/postgresql/11/main/postgresql.conf \
