@@ -77,7 +77,9 @@ case ${OUTPUT} in
 			-nln alkisnotinosm \
 			${BASE}/${OUTPUT} \
 			PG:"dbname='osm'" \
-			-sql "select ogc_fid as id, diff as geom, 'Area ' || trunc(area) || 'm²' as text, 'default' as style from ax_gebaeude_diff"
+			-sql "select ogc_fid as id, diff as geom, area, 'Area ' || trunc(area) || 'm²' as text, 'default' as style from ax_gebaeude_diff"
+
+			chown --reference $(dirname ${BASE}/${OUTPUT}) ${BASE}/${OUTPUT}
 		;;
 esac
 

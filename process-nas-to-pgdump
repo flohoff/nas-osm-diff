@@ -52,4 +52,6 @@ done
 
 pg_dump -o alkis >${BASE}/${OUTPUT}
 
+chown --reference $(dirname ${BASE}/${OUTPUT}) ${BASE}/${OUTPUT}
+
 /etc/init.d/postgresql stop
