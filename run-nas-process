@@ -1,0 +1,7 @@
+#!/bin/bash
+
+time docker run -it --rm -v $PWD:/current \
+	-e NASDIR=nasfiles \
+	-e OUTPUT=alkis-nas-dump/alkis-nas.$(date +%Y%m%d%H%M).sql \
+	flo/postgis /current/process-nas-to-pgdump
+

@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -x
+
+BASE=$(readlink -f $(dirname $0))
+
+# As we move data in and out of the Docker container we use relative paths
+cd ${BASE}
+
+cp ~/projects/osm/pbfdata/region/kreisgt/kreis-guetersloh.osm.pbf ${BASE}
+
+OUTFILE=sqlite-output/alkis-gebaeude-diff.$(date +%Y%m%d%H%M).sqlite
+ALKISDUMP=$(ls -1t alkis-nas-dump/*.sql | head -1)
+
+time docker run -i --rm -v $PWD:/current \
+	-e PBFFILE=kreis-guetersloh.osm.pbf \
+	-e ALKISFILE=${ALKISDUMP} \
+	-e OUTPUT=${OUTFILE} \
+	flo/postgis /current/process-diff-alkis-osm
+
+# docker will create it as root
+chown flo ${OUTFILE}
+sqlite3 ${OUTFILE} <alkisdiff-meta.sql
+
+cp ${OUTFILE} /var/www/osm.zz.de/spatialite-rest/databases/alkisdiff.sqlite
