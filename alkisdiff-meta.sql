@@ -28,6 +28,8 @@ INSERT INTO "meta" VALUES('layer.alkisnotinosm.stylecolumn','style');
 INSERT INTO "meta" VALUES('layer.alkisnotinosm.columns:0','ogc_fid');
 INSERT INTO "meta" VALUES('layer.alkisnotinosm.columns:1','text');
 INSERT INTO "meta" VALUES('layer.alkisnotinosm.columns:2','style');
+INSERT INTO "meta" VALUES('layer.alkisnotinosm.columns:3','gml_id');
+INSERT INTO "meta" VALUES('layer.alkisnotinosm.columns:4','alkisarea');
 INSERT INTO "meta" VALUES('layer.alkisnotinosm.popup', ( readfile('alkisdiff-alkisnotinosm-meta.popup' )) );
 
 INSERT INTO "meta" VALUES( 'boundary', ( readfile('kreis-guetersloh.geojson')));
