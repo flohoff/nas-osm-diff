@@ -45,18 +45,23 @@ select  *
 into    ax_gebaeude_diff
 from    (
         select  *,
-                ST_Area(ST_Transform(diff, 25832)) area
+                ST_Area(ST_Transform(diff, 25832)) area,
+                ST_Area(ST_Transform(alkisgeom, 25832)) alkisarea
         from    (
                 select  ogc_fid,
-                        ST_Difference(geom, building) as diff
+			gml_id,
+                        ST_Difference(geom, building) as diff,
+			geom as alkisgeom,
+			building as osmgeomcollection
                 from    (
                         select  g.ogc_fid,
+				g.gml_id,
                                 g.geom,
                                 ST_Union(p.way) as building
                         from    ax_gebaeude g
                                 join planet_osm_polygon p on ( ST_Intersects(p.way, g.geom) )
                         where   p.building <> ''
-                        group  by g.geom,ogc_fid
+                        group  by g.geom,ogc_fid,gml_id
                         ) foo  
                 ) bar   
         ) baz   
@@ -77,7 +82,7 @@ case ${OUTPUT} in
 			-nln alkisnotinosm \
 			${BASE}/${OUTPUT} \
 			PG:"dbname='osm'" \
-			-sql "select ogc_fid as id, diff as geom, area, 'Area ' || trunc(area) || 'm²' as text, 'default' as style from ax_gebaeude_diff"
+			-sql "select ogc_fid as id, gml_id as gmlid, diff as geom, area, alkisarea, 'Area ' || trunc(area) || 'm²' as text, 'default' as style from ax_gebaeude_diff"
 
 			chown --reference $(dirname ${BASE}/${OUTPUT}) ${BASE}/${OUTPUT}
 		;;
