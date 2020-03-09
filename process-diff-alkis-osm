@@ -49,24 +49,24 @@ from    (
                 ST_Area(ST_Transform(alkisgeom, 25832)) alkisarea
         from    (
                 select  ogc_fid,
-			gml_id,
-                        ST_Difference(geom, building) as diff,
-			geom as alkisgeom,
-			building as osmgeomcollection
+                        gml_id,
+                        coalesce(ST_Difference(geom, building), geom) as diff,
+                        geom as alkisgeom,
+                        building as osmgeomcollection
                 from    (
                         select  g.ogc_fid,
-				g.gml_id,
+                                g.gml_id,
                                 g.geom,
                                 ST_Union(p.way) as building
                         from    ax_gebaeude g
-                                join planet_osm_polygon p on ( ST_Intersects(p.way, g.geom) )
-                        where   p.building <> ''
-                        group  by g.geom,ogc_fid,gml_id
+                                left outer join planet_osm_polygon p on ( ST_Intersects(p.way, g.geom) and p.building <> '' )
+                        where   ( g.lagezurerdoberflaeche is null or g.lagezurerdoberflaeche <> 1200 )
+                        group by g.geom,ogc_fid,gml_id
                         ) foo  
-                ) bar   
-        ) baz   
+                ) bar
+        ) baz
 where   area > 5
-;     
+;       
 EOSQL
 
 
