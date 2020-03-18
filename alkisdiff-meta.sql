@@ -17,9 +17,21 @@ INSERT INTO "meta" VALUES('center.lat','51.93326');
 INSERT INTO "meta" VALUES('center.lon','8.80966');
 INSERT INTO "meta" VALUES('center.zoom','12');
 
-INSERT INTO "meta" VALUES('style.default.color','#ff0000');
-INSERT INTO "meta" VALUES('style.default.weight','4');
+INSERT INTO "meta" VALUES('style.default.color','#888888');
+INSERT INTO "meta" VALUES('style.default.weight','3');
 INSERT INTO "meta" VALUES('style.default.opacity','0.9');
+
+INSERT INTO "meta" VALUES('style.red.color','#ff0000');
+INSERT INTO "meta" VALUES('style.red.weight','3');
+INSERT INTO "meta" VALUES('style.red.opacity','0.9');
+
+INSERT INTO "meta" VALUES('style.blue.color','#0000ff');
+INSERT INTO "meta" VALUES('style.blue.weight','3');
+INSERT INTO "meta" VALUES('style.blue.opacity','0.9');
+
+INSERT INTO "meta" VALUES('style.green.color','#00ff00');
+INSERT INTO "meta" VALUES('style.green.weight','3');
+INSERT INTO "meta" VALUES('style.green.opacity','0.9');
 
 INSERT INTO "meta" VALUES('layer.alkisnotinosm.shortdescription','ALKIS/NAS differences to OSM for Kreis Gütersloh');
 INSERT INTO "meta" VALUES('layer.alkisnotinosm.geometrycolumn','geom');
@@ -28,7 +40,7 @@ INSERT INTO "meta" VALUES('layer.alkisnotinosm.stylecolumn','style');
 INSERT INTO "meta" VALUES('layer.alkisnotinosm.columns:0','ogc_fid');
 INSERT INTO "meta" VALUES('layer.alkisnotinosm.columns:1','text');
 INSERT INTO "meta" VALUES('layer.alkisnotinosm.columns:2','style');
-INSERT INTO "meta" VALUES('layer.alkisnotinosm.columns:3','gml_id');
+INSERT INTO "meta" VALUES('layer.alkisnotinosm.columns:3','gmlid');
 INSERT INTO "meta" VALUES('layer.alkisnotinosm.columns:4','alkisarea');
 INSERT INTO "meta" VALUES('layer.alkisnotinosm.popup', ( readfile('alkisdiff-alkisnotinosm-meta.popup' )) );
 

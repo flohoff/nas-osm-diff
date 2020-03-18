@@ -18,8 +18,9 @@ time docker run -i --rm -v $PWD:/current \
 	-e OUTPUT=${OUTFILE} \
 	flo/postgis /current/process-diff-alkis-osm
 
-# docker will create it as root
-chown flo ${OUTFILE}
 sqlite3 ${OUTFILE} <alkisdiff-meta.sql
+sqlite3 ${OUTFILE} "update alkisnotinosm set style='green' where alkisarea*0.1<area;"
+sqlite3 ${OUTFILE} "update alkisnotinosm set style='red' where alkisarea*0.9<area;"
+sqlite3 ${OUTFILE} "update alkisnotinosm set style='blue' where area between alkisarea*0.9 and alkisarea*0.1;"
 
 cp ${OUTFILE} /var/www/osm.zz.de/spatialite-rest/databases/alkisdiff.sqlite

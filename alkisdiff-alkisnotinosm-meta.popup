@@ -2,6 +2,6 @@ ALKIS building area not in OSM {{ text }}
 <p>
 Debug info:<br>
 ogc_fid {{ ogc_fid }}<br>
-gml_id: {{ gml_id }}<br>
+gml_id: {{ gmlid }}<br>
 alkis area: {{ alkisarea }}<br>
 </p>
