@@ -25,9 +25,9 @@ INSERT INTO "meta" VALUES('style.red.color','#ff0000');
 INSERT INTO "meta" VALUES('style.red.weight','3');
 INSERT INTO "meta" VALUES('style.red.opacity','0.9');
 
-INSERT INTO "meta" VALUES('style.blue.color','#0000ff');
-INSERT INTO "meta" VALUES('style.blue.weight','3');
-INSERT INTO "meta" VALUES('style.blue.opacity','0.9');
+INSERT INTO "meta" VALUES('style.yellow.color','#ffff00');
+INSERT INTO "meta" VALUES('style.yellow.weight','3');
+INSERT INTO "meta" VALUES('style.yellow.opacity','0.9');
 
 INSERT INTO "meta" VALUES('style.green.color','#00ff00');
 INSERT INTO "meta" VALUES('style.green.weight','3');
