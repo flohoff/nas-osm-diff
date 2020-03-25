@@ -33,16 +33,27 @@ INSERT INTO "meta" VALUES('style.green.color','#00ff00');
 INSERT INTO "meta" VALUES('style.green.weight','3');
 INSERT INTO "meta" VALUES('style.green.opacity','0.9');
 
-INSERT INTO "meta" VALUES('layer.alkisnotinosm.shortdescription','ALKIS/NAS differences to OSM for Kreis Gütersloh');
-INSERT INTO "meta" VALUES('layer.alkisnotinosm.geometrycolumn','geom');
-INSERT INTO "meta" VALUES('layer.alkisnotinosm.srid','4326');
-INSERT INTO "meta" VALUES('layer.alkisnotinosm.stylecolumn','style');
-INSERT INTO "meta" VALUES('layer.alkisnotinosm.columns:0','ogc_fid');
-INSERT INTO "meta" VALUES('layer.alkisnotinosm.columns:1','text');
-INSERT INTO "meta" VALUES('layer.alkisnotinosm.columns:2','style');
-INSERT INTO "meta" VALUES('layer.alkisnotinosm.columns:3','gmlid');
-INSERT INTO "meta" VALUES('layer.alkisnotinosm.columns:4','alkisarea');
-INSERT INTO "meta" VALUES('layer.alkisnotinosm.popup', ( readfile('alkisdiff-alkisnotinosm-meta.popup' )) );
+INSERT INTO "meta" VALUES('layer.buildingnotinosm.shortdescription','ALKIS/NAS building differences to OSM for Kreis Gütersloh');
+INSERT INTO "meta" VALUES('layer.buildingnotinosm.geometrycolumn','geom');
+INSERT INTO "meta" VALUES('layer.buildingnotinosm.srid','4326');
+INSERT INTO "meta" VALUES('layer.buildingnotinosm.stylecolumn','style');
+INSERT INTO "meta" VALUES('layer.buildingnotinosm.columns:0','ogc_fid');
+INSERT INTO "meta" VALUES('layer.buildingnotinosm.columns:1','text');
+INSERT INTO "meta" VALUES('layer.buildingnotinosm.columns:2','style');
+INSERT INTO "meta" VALUES('layer.buildingnotinosm.columns:3','gmlid');
+INSERT INTO "meta" VALUES('layer.buildingnotinosm.columns:4','alkisarea');
+INSERT INTO "meta" VALUES('layer.buildingnotinosm.popup', ( readfile('alkisdiff-meta.popup' )) );
+
+INSERT INTO "meta" VALUES('layer.waternotinosm.shortdescription','ALKIS/NAS water body differences to OSM for Kreis Gütersloh');
+INSERT INTO "meta" VALUES('layer.waternotinosm.geometrycolumn','geom');
+INSERT INTO "meta" VALUES('layer.waternotinosm.srid','4326');
+INSERT INTO "meta" VALUES('layer.waternotinosm.stylecolumn','style');
+INSERT INTO "meta" VALUES('layer.waternotinosm.columns:0','ogc_fid');
+INSERT INTO "meta" VALUES('layer.waternotinosm.columns:1','text');
+INSERT INTO "meta" VALUES('layer.waternotinosm.columns:2','style');
+INSERT INTO "meta" VALUES('layer.waternotinosm.columns:3','gmlid');
+INSERT INTO "meta" VALUES('layer.waternotinosm.columns:4','alkisarea');
+INSERT INTO "meta" VALUES('layer.waternotinosm.popup', ( readfile('alkisdiff-meta.popup' )) );
 
 INSERT INTO "meta" VALUES( 'boundary', ( readfile('kreis-guetersloh.geojson')));
 

@@ -70,6 +70,44 @@ where   area > 5
 EOSQL
 
 
+psql osm -c "SELECT AddGeometryColumn ('public','ax_stehendesgewaesser','geom',4326,'GEOMETRY',2);"
+psql osm -c "update ax_stehendesgewaesser set geom = ST_Transform(wkb_geometry, 4326);"
+psql osm -c "create index ax_stehendesgewaesser_geom_idx on ax_stehendesgewaesser using gist (geom);"
+
+psql osm <<EOSQL
+select  *
+into    ax_water_diff
+from    (
+        select  *,
+                ST_Area(ST_Transform(diff, 25832)) area,
+                ST_Area(ST_Transform(alkisgeom, 25832)) alkisarea
+        from    (
+                select  ogc_fid,
+                        gml_id,
+                        coalesce(ST_Difference(geom, water), geom) as diff,
+                        geom as alkisgeom,
+                        water as osmgeomcollection
+                from    (
+                        select  g.ogc_fid,
+                                g.gml_id,
+                                g.geom,
+                                ST_Union(p.way) as water
+                        from    ax_stehendesgewaesser g
+                                left outer join planet_osm_polygon p on (
+					ST_Intersects(p.way, g.geom)
+					and (
+						p.natural in ( 'water' )
+						or p.landuse in ( 'basin' )
+					)
+				)
+                        group by g.geom,ogc_fid,gml_id
+                        ) foo
+                ) bar
+        ) baz
+where   area > 50
+;
+EOSQL
+
 case ${OUTPUT} in
 	*.dump)
 		pg_dump -O osm \
@@ -79,12 +117,19 @@ case ${OUTPUT} in
 	*.sqlite)
 		ogr2ogr -f SQLite \
 			-dsco SPATIALITE=YES \
-			-nln alkisnotinosm \
+			-nln buildingnotinosm \
 			${BASE}/${OUTPUT} \
 			PG:"dbname='osm'" \
 			-sql "select ogc_fid as id, gml_id as gmlid, diff as geom, area, alkisarea, 'Area ' || trunc(area) || 'm²' as text, 'default' as style from ax_gebaeude_diff"
 
-			chown --reference $(dirname ${BASE}/${OUTPUT}) ${BASE}/${OUTPUT}
+		ogr2ogr -f SQLite \
+			-append -update \
+			-nln waternotinosm \
+			${BASE}/${OUTPUT} \
+			PG:"dbname='osm'" \
+			-sql "select ogc_fid as id, gml_id as gmlid, diff as geom, area, alkisarea, 'Area ' || trunc(area) || 'm²' as text, 'default' as style from ax_water_diff"
+
+		chown --reference $(dirname ${BASE}/${OUTPUT}) ${BASE}/${OUTPUT}
 		;;
 esac
 
