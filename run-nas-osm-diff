@@ -28,3 +28,5 @@ sqlite3 ${OUTFILE} "update waternotinosm set style='red' where area > alkisarea*
 sqlite3 ${OUTFILE} "update waternotinosm set style='yellow' where area between alkisarea*0.1 and alkisarea*0.9;"
 
 cp ${OUTFILE} /var/www/osm.zz.de/spatialite-rest/databases/alkisdiff.sqlite
+
+rm ${OUTFILE}
