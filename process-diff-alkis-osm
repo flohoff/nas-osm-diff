@@ -5,12 +5,12 @@ set -x
 
 BASE=/current
 
-if [ ! -e ${BASE}/${PBFFILE} ]; then
+if [ ! -e ${PBFFILE} ]; then
 	echo Need PBFFILE in environment
 	exit 0
 fi
 
-if [ ! -e ${BASE}/${ALKISFILE} ]; then
+if [ ! -e ${ALKISFILE} ]; then
 	echo Need ALKISFILE in environment
 	exit 0
 fi
@@ -28,11 +28,11 @@ psql osm -c "create extension hstore;"
 
 # Import the osm pbf file
 osm2pgsql --hstore --create --latlong --slim --cache 6000 \
-	-x -d osm -U root ${BASE}/${PBFFILE}
+	-x -d osm -U root ${PBFFILE}
 
 # Skip indexing - we dont need any of those indexes
 # Import NAS/ALKIS dump
-sed -e 's/CREATE.* INDEX/-- CREATE INDEX/' <${BASE}/${ALKISFILE} |\
+sed -e 's/CREATE.* INDEX/-- CREATE INDEX/' <${ALKISFILE} |\
 	psql osm -f -
 
 # Create SRID 4326 shadow column in the ax_gebaeude table
@@ -44,24 +44,23 @@ psql osm <<EOSQL
 select  *
 into    ax_gebaeude_diff
 from    (
-        select  *,
+        select  bar.*,
                 ST_Area(ST_Transform(diff, 25832)) area,
                 ST_Area(ST_Transform(alkisgeom, 25832)) alkisarea
         from    (
-                select  ogc_fid,
-                        gml_id,
-                        coalesce(ST_Difference(geom, building), geom) as diff,
-                        geom as alkisgeom,
-                        building as osmgeomcollection
+                select  foo.*,
+                        coalesce(ST_Difference(alkisgeom, osmgeom), alkisgeom) as diff
                 from    (
                         select  g.ogc_fid,
                                 g.gml_id,
-                                g.geom,
-                                ST_Union(p.way) as building
+                                g.geom as alkisgeom,
+				g.gebaeudefunktion,
+                                ST_Union(p.way) as osmgeom
                         from    ax_gebaeude g
                                 left outer join planet_osm_polygon p on ( ST_Intersects(p.way, g.geom) and p.building <> '' )
                         where   ( g.lagezurerdoberflaeche is null or g.lagezurerdoberflaeche <> 1200 )
-                        group by g.geom,ogc_fid,gml_id
+			and	g.gebaeudefunktion not in ( 1310 )
+                        group by g.geom,ogc_fid,gml_id,gebaeudefunktion
                         ) foo  
                 ) bar
         ) baz
@@ -108,28 +107,77 @@ where   area > 50
 ;
 EOSQL
 
-case ${OUTPUT} in
+psql osm <<EOSQL
+select  *,
+        ST_Area(ST_Transform(diff, 25832)) areadiff
+into buildingmerge
+from    (
+        select  *,
+                ST_Difference(geomalkis, geomosm) as diff,
+                ST_Area(ST_Transform(geomalkis, 25832)) areaalkis,
+                ST_Area(ST_Transform(geomosm, 25832)) areaosm
+        from    (
+                select  g.ogc_fid,
+                        g.gml_id,
+                        g.gebaeudefunktion,
+                        p.building,
+                        p.osm_id,
+                        p.way as geomosm,
+                        g.geom as geomalkis
+                from    ax_gebaeude g
+                        left outer join planet_osm_polygon p on ( ST_Intersects(p.way, g.geom) and p.building <> '' )
+                where   ( g.lagezurerdoberflaeche is null or g.lagezurerdoberflaeche <> 1200 ) 
+                ) intersections
+        ) areas
+;
+EOSQL
+
+psql osm <<EOSQL
+select  *
+into    buildingmisclassified
+from    (
+        select  ogc_fid,gml_id,geomalkis as geom,areaalkis,areaosm,osm_id,gebaeudefunktion,building,
+                'Not garage or garages (' || building || ')' as error,
+                'red' as style
+        from    buildingmerge
+        where   areadiff < areaalkis*0.1
+        and     gebaeudefunktion = 2463
+        and     building is not null
+	and	building not in ( 'garage', 'garages' )
+	and	geomalkis is not null
+        ) foo
+;
+EOSQL
+
+case ${OUTFILE} in
 	*.dump)
 		pg_dump -O osm \
 			-t ax_gebaeude_diff \
-			>${BASE}/${OUTPUT}
+			>${OUTFILE}
 		;;
 	*.sqlite)
 		ogr2ogr -f SQLite \
 			-dsco SPATIALITE=YES \
 			-nln buildingnotinosm \
-			${BASE}/${OUTPUT} \
+			${OUTFILE} \
 			PG:"dbname='osm'" \
-			-sql "select ogc_fid as id, gml_id as gmlid, diff as geom, area, alkisarea, 'Area ' || trunc(area) || 'm²' as text, 'default' as style from ax_gebaeude_diff"
+			-sql "select ogc_fid as nas_ogc_fid, gml_id, gebaeudefunktion, diff as geom, area, alkisarea, 'Area ' || trunc(area) || 'm²' as text, 'default' as style from ax_gebaeude_diff"
 
 		ogr2ogr -f SQLite \
 			-append -update \
 			-nln waternotinosm \
-			${BASE}/${OUTPUT} \
+			${OUTFILE} \
 			PG:"dbname='osm'" \
-			-sql "select ogc_fid as id, gml_id as gmlid, diff as geom, area, alkisarea, 'Area ' || trunc(area) || 'm²' as text, 'default' as style from ax_water_diff"
+			-sql "select ogc_fid as nas_ogc_fid, gml_id, diff as geom, area, alkisarea, 'Area ' || trunc(area) || 'm²' as text, 'default' as style from ax_water_diff"
 
-		chown --reference $(dirname ${BASE}/${OUTPUT}) ${BASE}/${OUTPUT}
+		ogr2ogr -f SQLite \
+			-append -update \
+			-nln misclassified \
+			${OUTFILE} \
+			PG:"dbname='osm'" \
+			-sql "select ogc_fid as nas_ogc_fid,gml_id,gebaeudefunktion,building,geom,error,style from buildingmisclassified"
+
+		chown --reference $(dirname ${OUTFILE}) ${OUTFILE}
 		;;
 esac
 

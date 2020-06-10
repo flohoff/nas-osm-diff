@@ -1,0 +1,11 @@
+#!/bin/bash
+
+dir="nasfiles"
+
+for file in $(cd ${dir} ; ls -1); do
+	echo $file
+	dest=$(printf "%s/%s" ${dir} ${file})
+	url=$(printf "https://geoportal.kreis-guetersloh.de/opendata/dez4/%s" ${file})
+	echo Fetching ${url} to ${dest}
+	curl -R -L -z ${dest} -o ${dest} "${url}"
+done

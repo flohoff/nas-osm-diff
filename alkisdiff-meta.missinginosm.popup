@@ -1,8 +1,10 @@
-ALKIS building not in OSM<br>
+<h4>Building missing in OSM</h4>
+<p>
 {{ text }}
+</p>
 <p>
 Debug info:<br>
 ogc_fid {{ nas_ogc_fid }}<br>
 gml_id: {{ gml_id }}<br>
-alkis area: {{ alkisarea }}<br>
+gebaeudefunktion: {{ gebaeudefunktion }}<br>
 </p>

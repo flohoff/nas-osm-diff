@@ -4,19 +4,23 @@ set -x
 
 BASE=$(readlink -f $(dirname $0))
 
-# As we move data in and out of the Docker container we use relative paths
-cd ${BASE}
+PBF=~/projects/osm/pbfdata/region/kreisgt/kreis-guetersloh.osm.pbf
 
-cp ~/projects/osm/pbfdata/region/kreisgt/kreis-guetersloh.osm.pbf ${BASE}
+OUTFILE=${BASE}/sqlite-output/alkis-gebaeude-diff.$(date +%Y%m%d%H%M).sqlite
+ALKISDUMP=$(ls -1t ${BASE}/alkis-nas-dump/*.sql | head -1)
 
-OUTFILE=sqlite-output/alkis-gebaeude-diff.$(date +%Y%m%d%H%M).sqlite
-ALKISDUMP=$(ls -1t alkis-nas-dump/*.sql | head -1)
+time docker run -i --rm \
+	-v ${BASE}:/current \
+	-v $(dirname ${PBF}):/pbf \
+	-v $(dirname ${OUTFILE}):/output \
+	-v $(dirname ${ALKISDUMP}):/alkis \
+	-e PBFFILE=/pbf/$(basename ${PBF}) \
+	-e ALKISFILE=/alkis/$(basename ${ALKISDUMP}) \
+	-e OUTFILE=/output/$(basename ${OUTFILE}) \
+	flo/postgis \
+	/current/process-diff-alkis-osm
 
-time docker run -i --rm -v $PWD:/current \
-	-e PBFFILE=kreis-guetersloh.osm.pbf \
-	-e ALKISFILE=${ALKISDUMP} \
-	-e OUTPUT=${OUTFILE} \
-	flo/postgis /current/process-diff-alkis-osm
+set -e
 
 sqlite3 ${OUTFILE} <alkisdiff-meta.sql
 sqlite3 ${OUTFILE} "update buildingnotinosm set style='green' where area < alkisarea*0.1;"
