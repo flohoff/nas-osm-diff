@@ -33,6 +33,14 @@ INSERT INTO "meta" VALUES('style.green.color','#00ff00');
 INSERT INTO "meta" VALUES('style.green.weight','3');
 INSERT INTO "meta" VALUES('style.green.opacity','0.9');
 
+INSERT INTO "meta" VALUES('style.cyan.color','#00d0d0');
+INSERT INTO "meta" VALUES('style.cyan.weight','3');
+INSERT INTO "meta" VALUES('style.cyan.opacity','0.9');
+
+INSERT INTO "meta" VALUES('style.brown.color','#d07000');
+INSERT INTO "meta" VALUES('style.brown.weight','3');
+INSERT INTO "meta" VALUES('style.brown.opacity','0.9');
+
 INSERT INTO "meta" VALUES('layer.buildingnotinosm.shortdescription','ALKIS/NAS building differences to OSM for Kreis Gütersloh');
 INSERT INTO "meta" VALUES('layer.buildingnotinosm.geometrycolumn','geom');
 INSERT INTO "meta" VALUES('layer.buildingnotinosm.srid','4326');
@@ -43,7 +51,7 @@ INSERT INTO "meta" VALUES('layer.buildingnotinosm.columns:2','style');
 INSERT INTO "meta" VALUES('layer.buildingnotinosm.columns:3','gml_id');
 INSERT INTO "meta" VALUES('layer.buildingnotinosm.columns:4','alkisarea');
 INSERT INTO "meta" VALUES('layer.buildingnotinosm.columns:5','gebaeudefunktion');
-INSERT INTO "meta" VALUES('layer.buildingnotinosm.popup', ( readfile('alkisdiff-meta.missinginosm.popup' )) );
+INSERT INTO "meta" VALUES('layer.buildingnotinosm.popup', ( readfile('data/alkisdiff-meta.buildingnotinosm.popup' )) );
 
 INSERT INTO "meta" VALUES('layer.waternotinosm.shortdescription','ALKIS/NAS water body differences to OSM for Kreis Gütersloh');
 INSERT INTO "meta" VALUES('layer.waternotinosm.geometrycolumn','geom');
@@ -54,7 +62,7 @@ INSERT INTO "meta" VALUES('layer.waternotinosm.columns:1','text');
 INSERT INTO "meta" VALUES('layer.waternotinosm.columns:2','style');
 INSERT INTO "meta" VALUES('layer.waternotinosm.columns:3','gml_id');
 INSERT INTO "meta" VALUES('layer.waternotinosm.columns:4','alkisarea');
-INSERT INTO "meta" VALUES('layer.waternotinosm.popup', ( readfile('alkisdiff-meta.popup' )) );
+INSERT INTO "meta" VALUES('layer.waternotinosm.popup', ( readfile('data/alkisdiff-meta.waternotinosm.popup' )) );
 
 INSERT INTO "meta" VALUES('layer.misclassified.shortdescription','ALKIS/NAS vs OSM misclassified building types for Kreis Gütersloh');
 INSERT INTO "meta" VALUES('layer.misclassified.geometrycolumn','geom');
@@ -66,8 +74,8 @@ INSERT INTO "meta" VALUES('layer.misclassified.columns:2','error');
 INSERT INTO "meta" VALUES('layer.misclassified.columns:3','style');
 INSERT INTO "meta" VALUES('layer.misclassified.columns:4','gebaeudefunktion');
 INSERT INTO "meta" VALUES('layer.misclassified.columns:5','building');
-INSERT INTO "meta" VALUES('layer.misclassified.popup', ( readfile('alkisdiff-meta.misclassified.popup' )) );
+INSERT INTO "meta" VALUES('layer.misclassified.popup', ( readfile('data/alkisdiff-meta.misclassified.popup' )) );
 
-INSERT INTO "meta" VALUES( 'boundary', ( readfile('kreis-guetersloh.geojson')));
+INSERT INTO "meta" VALUES( 'boundary', ( readfile('sql/kreis-guetersloh.geojson')));
 
 COMMIT;

@@ -15,7 +15,7 @@ su - postgres -c "createuser root -s"
 createdb alkis -O root
 psql alkis -c "create extension postgis;"
 
-psql alkis -f ${BASE}/alkisimport-schema.sql
+psql alkis -f ${BASE}/sql/alkisimport-schema.sql
 
 # ( cd ${BASE}/alkisimport ; psql alkis \
 # 	-v alkis_epsg=25832 \

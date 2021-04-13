@@ -1,10 +1,12 @@
-<h4>Building missing in OSM</h4>
+<h4>Misclassified building</h4>
 <p>
-{{ text }}
+{{ error }}
 </p>
 <p>
 Debug info:<br>
 ogc_fid {{ nas_ogc_fid }}<br>
 gml_id: {{ gml_id }}<br>
 gebaeudefunktion: {{ gebaeudefunktion }}<br>
+building: {{ building }}<br>
 </p>
+{{> remotecontrol }}

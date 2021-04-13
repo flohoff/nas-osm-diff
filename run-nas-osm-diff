@@ -22,7 +22,8 @@ time docker run -i --rm \
 
 set -e
 
-sqlite3 ${OUTFILE} <alkisdiff-meta.sql
+cd ${BASE}
+sqlite3 ${OUTFILE} <sql/alkisdiff-meta.sql
 sqlite3 ${OUTFILE} "update buildingnotinosm set style='green' where area < alkisarea*0.1;"
 sqlite3 ${OUTFILE} "update buildingnotinosm set style='red' where area > alkisarea*0.9;"
 sqlite3 ${OUTFILE} "update buildingnotinosm set style='yellow' where area between alkisarea*0.1 and alkisarea*0.9;"

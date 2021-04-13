@@ -25,6 +25,8 @@ su - postgres -c "createuser root -s"
 createdb osm -O root
 psql osm -c "create extension postgis;"
 psql osm -c "create extension hstore;"
+psql osm -c "alter system set maintenance_work_mem = '1GB';"
+psql osm -c "SELECT pg_reload_conf();"
 
 # Import the osm pbf file
 osm2pgsql --hstore --create --latlong --slim --cache 6000 \
@@ -45,8 +47,8 @@ select  *
 into    ax_gebaeude_diff
 from    (
         select  bar.*,
-                ST_Area(ST_Transform(diff, 25832)) area,
-                ST_Area(ST_Transform(alkisgeom, 25832)) alkisarea
+                ST_Area(diff, true) area,
+                ST_Area(alkisgeom, true) alkisarea
         from    (
                 select  foo.*,
                         coalesce(ST_Difference(alkisgeom, osmgeom), alkisgeom) as diff
@@ -78,8 +80,8 @@ select  *
 into    ax_water_diff
 from    (
         select  *,
-                ST_Area(ST_Transform(diff, 25832)) area,
-                ST_Area(ST_Transform(alkisgeom, 25832)) alkisarea
+                ST_Area(diff, true) area,
+                ST_Area(alkisgeom, true) alkisarea
         from    (
                 select  ogc_fid,
                         gml_id,
@@ -114,13 +116,14 @@ into buildingmerge
 from    (
         select  *,
                 ST_Difference(geomalkis, geomosm) as diff,
-                ST_Area(ST_Transform(geomalkis, 25832)) areaalkis,
-                ST_Area(ST_Transform(geomosm, 25832)) areaosm
+                ST_Area(geomalkis, true) areaalkis,
+                ST_Area(geomosm, true) areaosm
         from    (
                 select  g.ogc_fid,
                         g.gml_id,
                         g.gebaeudefunktion,
                         p.building,
+			p.power,
                         p.osm_id,
                         p.way as geomosm,
                         g.geom as geomalkis
@@ -144,6 +147,25 @@ from    (
         and     gebaeudefunktion = 2463
         and     building is not null
 	and	building not in ( 'garage', 'garages' )
+	and	geomalkis is not null
+	union all
+	select  ogc_fid,gml_id,geomalkis as geom,areaalkis,areaosm,osm_id,gebaeudefunktion,building,
+                'Power substation without power tag' as error,
+                'cyan' as style
+        from    buildingmerge
+        where   areadiff < areaalkis*0.1
+        and     gebaeudefunktion = 2523
+	and	power is null
+	and	geomalkis is not null
+	union all
+	select  ogc_fid,gml_id,geomalkis as geom,areaalkis,areaosm,osm_id,gebaeudefunktion,building,
+                'Shed not tagges as shed (' || building || ')' as error,
+                'brown' as style
+        from    buildingmerge
+        where   areadiff < areaalkis*0.1
+        and     gebaeudefunktion = 2723
+	and	building is not null
+	and	building <> 'shed'
 	and	geomalkis is not null
         ) foo
 ;
