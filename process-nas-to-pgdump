@@ -8,6 +8,7 @@ BASE=/current
 # Turn off sync/fsync etc - we throw away the database anyway
 echo "fsync=off" >>/etc/postgresql/11/main/postgresql.conf
 echo "synchronous_commit=off" >>/etc/postgresql/11/main/postgresql.conf
+echo "work_mem=128MB" >>/etc/postgresql/11/main/postgresql.conf
 
 /etc/init.d/postgresql start
 
@@ -51,7 +52,6 @@ for i in ${BASE}/${NASDIR}/*.zip; do
 done
 
 pg_dump -o alkis >${BASE}/${OUTPUT}
-
 chown --reference $(dirname ${BASE}/${OUTPUT}) ${BASE}/${OUTPUT}
 
 /etc/init.d/postgresql stop
