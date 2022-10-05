@@ -34,8 +34,9 @@ osm2pgsql --hstore --create --latlong --slim --cache 6000 \
 
 # Skip indexing - we dont need any of those indexes
 # Import NAS/ALKIS dump
-sed -e 's/CREATE.* INDEX/-- CREATE INDEX/' <${ALKISFILE} |\
-	psql osm -f -
+zcat ${ALKISFILE} \
+	| sed -e 's/CREATE.* INDEX/-- CREATE INDEX/' \
+	| psql osm -f -
 
 # Create SRID 4326 shadow column in the ax_gebaeude table
 psql osm -c "SELECT AddGeometryColumn ('public','ax_gebaeude','geom',4326,'GEOMETRY',2);"
