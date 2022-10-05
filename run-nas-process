@@ -1,7 +1,17 @@
 #!/bin/bash
 
-time docker run -it --rm -v $PWD:/current \
+BASE=$(readlink -f $(dirname $0))
+
+set -x
+
+${BASE}/nasfiles.update
+
+OUTPUT="alkis-nas-dump/alkis-nas.$(date +%Y%m%d%H%M).sql"
+
+time docker run -i --rm \
+	-v ${BASE}:/current \
 	-e NASDIR=nasfiles \
-	-e OUTPUT=alkis-nas-dump/alkis-nas.$(date +%Y%m%d%H%M).sql \
+	-e OUTPUT=${OUTPUT} \
 	flo/postgis /current/process-nas-to-pgdump
 
+gzip -9 ${OUTPUT}
