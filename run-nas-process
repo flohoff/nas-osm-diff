@@ -6,12 +6,10 @@ set -x
 
 ${BASE}/nasfiles.update
 
-OUTPUT="alkis-nas-dump/alkis-nas.$(date +%Y%m%d%H%M).sql"
+OUTPUT="alkis-nas-dump/alkis-nas.$(date +%Y%m%d%H%M).sql.gz"
 
 time docker run -i --rm \
 	-v ${BASE}:/current \
 	-e NASDIR=nasfiles \
 	-e OUTPUT=${OUTPUT} \
 	flo/postgis /current/process-nas-to-pgdump
-
-gzip -9 ${OUTPUT}

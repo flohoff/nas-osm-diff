@@ -51,7 +51,7 @@ for i in ${BASE}/${NASDIR}/*.zip; do
 	import $(readlink -f $i)
 done
 
-pg_dump -o alkis >${BASE}/${OUTPUT}
+pg_dump -o alkis | gzip -9 >${BASE}/${OUTPUT}
 chown --reference $(dirname ${BASE}/${OUTPUT}) ${BASE}/${OUTPUT}
 
 /etc/init.d/postgresql stop
